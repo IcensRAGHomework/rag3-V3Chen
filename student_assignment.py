@@ -15,9 +15,23 @@ def generate_hw01():
     pass
     
 def generate_hw02(question, city, store_type, start_date, end_date):
+    print(
+    "question = " + str(question) + ",\n"
+    "city = " + str(city) + ",\n"
+    "store_type = " + str(store_type) + ",\n"
+    "start_date = " + str(start_date) + ",\n"
+    "end_date = " + str(end_date)
+    )
     pass
     
 def generate_hw03(question, store_name, new_store_name, city, store_type):
+    print(
+    "question = " + str(question) + ",\n"
+    "store_name = " + str(store_name) + ",\n"
+    "new_store_name = " + str(new_store_name) + ",\n"
+    "city = " + str(city) + ",\n"
+    "store_type = " + str(store_type)
+    )
     pass
     
 def demo(question):
