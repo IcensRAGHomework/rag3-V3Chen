@@ -44,22 +44,35 @@ def generate_hw01():
     # init
     collection = init_collections()
 
-    # load csv
-    df = load_csv()
+    if collection.count() == 0: 
+        # load csv
+        df = pd.read_csv(csv_file_name)
 
-    # for basic
-    documents = get_documents(df, 'HostWords')
-    ids = get_ids(df, 'ID')
+        # for basic
+        documents = get_documents(df, 'HostWords')
+        ids = get_ids(df, 'ID')
 
-    # for metadata
-    df['CreateDate'] = pd.to_datetime(df['CreateDate'])
-    df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
-    df = df.rename(columns={'Name': 'name'})
-    metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
-    metadatas = df[metadata_columns].to_dict('records')
+        # for metadata
+        df['CreateDate'] = pd.to_datetime(df['CreateDate'])
+        df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
 
-    # add to collection
-    collection.add(documents=documents, ids=ids, metadatas=metadatas)
+        df['file_name'] = csv_file_name
+
+        df = df.rename(columns={
+            'Name': 'name',
+            'Type': 'type',
+            'Address': 'address',
+            'Tel': 'tel',
+            'City': 'city',
+            'Town': 'town',
+            'CreateDate': 'date'
+        })
+
+        metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
+        metadatas = df[metadata_columns].to_dict('records')
+
+        # add to collection
+        collection.add(documents=documents, ids=ids, metadatas=metadatas)
     
     return collection
 
@@ -87,35 +100,36 @@ def generate_hw03(question, store_name, new_store_name, city, store_type):
 def demo(question):
     # init
     collection = init_collections()
+   
+    if collection.count() == 0: 
+        # load csv
+        df = pd.read_csv(csv_file_name)
 
-    # load csv
-    df = pd.read_csv(csv_file_name)
+        # for basic
+        documents = get_documents(df, 'HostWords')
+        ids = get_ids(df, 'ID')
 
-    # for basic
-    documents = get_documents(df, 'HostWords')
-    ids = get_ids(df, 'ID')
+        # for metadata
+        df['CreateDate'] = pd.to_datetime(df['CreateDate'])
+        df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
 
-    # for metadata
-    df['CreateDate'] = pd.to_datetime(df['CreateDate'])
-    df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
+        df['file_name'] = csv_file_name
 
-    df['file_name'] = csv_file_name
+        df = df.rename(columns={
+            'Name': 'name',
+            'Type': 'type',
+            'Address': 'address',
+            'Tel': 'tel',
+            'City': 'city',
+            'Town': 'town',
+            'CreateDate': 'date'
+        })
 
-    df = df.rename(columns={
-        'Name': 'name',
-        'Type': 'type',
-        'Address': 'address',
-        'Tel': 'tel',
-        'City': 'city',
-        'Town': 'town',
-        'CreateDate': 'date'
-    })
+        metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
+        metadatas = df[metadata_columns].to_dict('records')
 
-    metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
-    metadatas = df[metadata_columns].to_dict('records')
-
-    # add to collection
-    collection.add(documents=documents, ids=ids, metadatas=metadatas)
+        # add to collection
+        collection.add(documents=documents, ids=ids, metadatas=metadatas)
 
     # test
     results = collection.query(query_texts=[question], n_results=2)
