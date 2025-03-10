@@ -52,6 +52,7 @@ def generate_hw01():
     # for metadata
     df['CreateDate'] = pd.to_datetime(df['CreateDate'])
     df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
+    df = df.rename(columns={'Name': 'name'})
     metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
     metadatas = df[metadata_columns].to_dict('records')
 
@@ -95,6 +96,17 @@ def demo(question):
     # for metadata
     df['CreateDate'] = pd.to_datetime(df['CreateDate'])
     df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
+
+    df = df.rename(columns={
+        'Name': 'name',
+        'Type': 'type',
+        'Address': 'address',
+        'Tel': 'tel',
+        'City': 'city',
+        'Town': 'town',
+        'CreateDate': 'date'
+    })
+
     metadata_columns = [col for col in df.columns if col not in ['ID', 'HostWords', 'FoodFeature']]
     metadatas = df[metadata_columns].to_dict('records')
 
@@ -110,4 +122,4 @@ def demo(question):
     return collection
 
 
-# demo("田媽媽")
+demo("田媽媽")
