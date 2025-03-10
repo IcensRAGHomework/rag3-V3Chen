@@ -12,6 +12,8 @@ gpt_emb_config = get_model_configuration(gpt_emb_version)
 
 dbpath = "./"
 
+csv_file_name = 'COA_OpenData.csv'
+
 def init_collections():
     chroma_client = chromadb.PersistentClient(path=dbpath)
     openai_ef = embedding_functions.OpenAIEmbeddingFunction(
@@ -29,7 +31,7 @@ def init_collections():
     return collection
 
 def load_csv():
-    return pd.read_csv('COA_OpenData.csv')
+    return pd.read_csv(csv_file_name)
 
 def get_documents(df, tag):
     return df[tag].tolist()
@@ -87,7 +89,7 @@ def demo(question):
     collection = init_collections()
 
     # load csv
-    df = load_csv()
+    df = pd.read_csv(csv_file_name)
 
     # for basic
     documents = get_documents(df, 'HostWords')
@@ -96,6 +98,8 @@ def demo(question):
     # for metadata
     df['CreateDate'] = pd.to_datetime(df['CreateDate'])
     df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
+
+    df['file_name'] = csv_file_name
 
     df = df.rename(columns={
         'Name': 'name',
