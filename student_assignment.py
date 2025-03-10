@@ -1,6 +1,8 @@
 import datetime
 import chromadb
 import traceback
+import pandas as pd
+import openai
 
 from chromadb.utils import embedding_functions
 
@@ -11,7 +13,43 @@ gpt_emb_config = get_model_configuration(gpt_emb_version)
 
 dbpath = "./"
 
+# # set model
+# openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+#     api_key="your_openai_api_key",
+#     model_name="text-embedding-ada-002"
+# )
+
+# db initial
+# client = chromadb.Client()
+client = chromadb.PersistentClient(path=dbpath)
+collection = client.get_or_create_collection(name="TRAVEL", metadata={"hnsw:space": "cosine"})
+df = pd.read_csv('COA_OpenData.csv')
+
+# for basic
+documents = df['HostWords'].tolist()
+ids = df['ID'].astype(str).tolist()
+
+# for metadata
+df['CreateDate'] = pd.to_datetime(df['CreateDate'])
+df['CreateDate'] = (df['CreateDate'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1s')
+metadata_columns = [col for col in df.columns if col not in ['ID', 'HotWords', 'FoodFeature']]
+metadatas = df[metadata_columns].to_dict('records')
+               
+# add to collection
+collection.add(documents=documents, ids=ids, metadatas=metadatas)
+
+# # test
+# results = collection.query(query_texts=["田媽媽"], n_results=2)
+# print("查詢結果:")
+# for i, (doc, meta) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
+#     print(f"結果 {i+1}: 內容: {doc}, Metadata: {meta}")
+
+def getCollection():
+    return collection
+
+
 def generate_hw01():
+    return collection
     pass
     
 def generate_hw02(question, city, store_type, start_date, end_date):
