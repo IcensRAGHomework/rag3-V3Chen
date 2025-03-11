@@ -85,7 +85,51 @@ def generate_hw02(question, city, store_type, start_date, end_date):
     "start_date = " + str(start_date) + ",\n"
     "end_date = " + str(end_date)
     )
-    pass
+
+    # init
+    collection = init_collections()
+    similarity_threshold = 0.8
+
+    # test
+    where = {
+        "$and": [
+            {"city": {"$in": city}},
+            {"type": {"$in": store_type}},
+            {"date": {"$gte": start_date.timestamp()}},
+            {"date": {"$lte": end_date.timestamp()}}
+        ]
+    }
+
+    results = collection.query(
+        query_texts=[question],
+        n_results=10,
+        include=["documents", "metadatas", "distances"],
+        where=where
+    )
+
+    filter_results = [] 
+    for doc, meta, dist, id in zip(
+        results['documents'][0],
+        results['metadatas'][0],
+        results['distances'][0],
+        results['ids'][0]
+    ):
+        similarity = 1 - dist
+        if similarity > similarity_threshold:
+            filter_results.append({
+                "id": id,
+                "document": doc,
+                "metadata": meta,
+                "distance": dist,
+                "similarity": similarity
+            }
+        )
+
+    filter_results = sorted(filter_results, key=lambda x: x["similarity"], reverse=True)
+    naem_list = [item["metadata"]["name"] for item in filter_results]
+    print(naem_list)
+    return naem_list
+    
     
 def generate_hw03(question, store_name, new_store_name, city, store_type):
     print(
@@ -96,7 +140,9 @@ def generate_hw03(question, store_name, new_store_name, city, store_type):
     "store_type = " + str(store_type)
     )
     pass
-    
+
+
+
 def demo(question):
     # init
     collection = init_collections()
@@ -131,7 +177,8 @@ def demo(question):
         # add to collection
         collection.add(documents=documents, ids=ids, metadatas=metadatas)
 
-    # test
+    
+
     results = collection.query(query_texts=[question], n_results=2)
     print("查詢結果:")
     for i, (doc, meta) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
@@ -140,4 +187,6 @@ def demo(question):
     return collection
 
 
-demo("田媽媽")
+# demo("田媽媽")
+
+# generate_hw02("我想找有關田媽媽的店家", ["臺中市"], ["美食"], datetime.datetime(2024, 1, 1), datetime.datetime(2024, 1, 15))
