@@ -139,7 +139,76 @@ def generate_hw03(question, store_name, new_store_name, city, store_type):
     "city = " + str(city) + ",\n"
     "store_type = " + str(store_type)
     )
-    pass
+
+    # init
+    collection = init_collections()
+    similarity_threshold = 0.8
+
+    # find item
+    where_old_name = {"name": store_name}
+    results = collection.query(
+        query_texts=[question],
+        n_results=10,
+        where=where_old_name,
+        include=["metadatas"]
+    )
+
+    print("查詢結果1:")
+    for meta in results['metadatas'][0]:
+        print(f"Metadata: {meta}")
+
+    # update item
+    if results['ids'][0]:
+        update_ids = results['ids'][0]
+        update_metadatas = results['metadatas'][0]
+        for meta in update_metadatas:
+            meta["new_store_name"] = new_store_name
+        
+        collection.update(ids=update_ids, metadatas=update_metadatas)
+
+    # query
+    where = {
+        "$and": [
+            {"city": {"$in": city}},
+            {"type": {"$in": store_type}}
+        ]
+    }
+
+    results = collection.query(
+        query_texts=[question],
+        n_results=10,
+        where=where,
+        include=["documents", "metadatas", "distances"]
+    )
+
+    print("查詢結果2:")
+    for meta in results['metadatas'][0]:
+        print(f"Metadata: {meta}")
+
+    filter_results = [] 
+    for doc, meta, dist, id in zip(
+        results['documents'][0],
+        results['metadatas'][0],
+        results['distances'][0],
+        results['ids'][0]
+    ):
+        similarity = 1 - dist
+        if similarity > similarity_threshold:
+            filter_results.append({
+                "id": id,
+                "document": doc,
+                "metadata": meta,
+                "distance": dist,
+                "similarity": similarity
+            }
+        )
+
+    filter_results = sorted(filter_results, key=lambda x: x["similarity"], reverse=True)
+    naem_list = [item["metadata"].get("new_store_name", item["metadata"]["name"]) for item in filter_results]
+    print("查詢結果3:")
+    print(naem_list)
+    return naem_list
+
 
 
 
@@ -190,3 +259,5 @@ def demo(question):
 # demo("田媽媽")
 
 # generate_hw02("我想找有關田媽媽的店家", ["臺中市"], ["美食"], datetime.datetime(2024, 1, 1), datetime.datetime(2024, 1, 15))
+
+# generate_hw03("我想要找南投縣的田媽媽餐廳，招牌是蕎麥麵", "耄饕客棧", "田媽媽(耄饕客棧)", ["南投縣"], ["美食"])
